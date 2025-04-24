@@ -1,14 +1,27 @@
 import { 
   users, type User, type InsertUser,
   projects, type Project, type InsertProject,
-  contactForms, type ContactForm, type InsertContactForm 
+  pipelines, type Pipeline, type InsertPipeline,
+  deployments, type Deployment, type InsertDeployment,
+  metrics, type Metric, type InsertMetric
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
 export interface IStorage {
+  // Session store
+  sessionStore: session.SessionStore;
+
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   
   // Project methods
   getAllProjects(): Promise<Project[]>;
@@ -17,145 +30,245 @@ export interface IStorage {
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined>;
   deleteProject(id: number): Promise<boolean>;
   
-  // Contact form methods
-  saveContactForm(contactForm: InsertContactForm): Promise<ContactForm>;
-  getContactForms(): Promise<ContactForm[]>;
+  // Pipeline methods
+  getAllPipelines(): Promise<Pipeline[]>;
+  getPipelinesByProjectId(projectId: number): Promise<Pipeline[]>;
+  getPipelineById(id: number): Promise<Pipeline | undefined>;
+  createPipeline(pipeline: InsertPipeline): Promise<Pipeline>;
+  updatePipeline(id: number, pipeline: Partial<InsertPipeline>): Promise<Pipeline | undefined>;
+  deletePipeline(id: number): Promise<boolean>;
+
+  // Deployment methods
+  getAllDeployments(limit?: number): Promise<Deployment[]>;
+  getDeploymentsByPipelineId(pipelineId: number): Promise<Deployment[]>;
+  getDeploymentById(id: number): Promise<Deployment | undefined>;
+  getDeploymentsByEnvironment(environment: string): Promise<Deployment[]>;
+  getDeploymentsByStatus(status: string): Promise<Deployment[]>;
+  getDeploymentsForApproval(): Promise<Deployment[]>;
+  getDeploymentsByDateRange(startDate: Date, endDate: Date): Promise<Deployment[]>;
+  createDeployment(deployment: InsertDeployment): Promise<Deployment>;
+  updateDeployment(id: number, deployment: Partial<Deployment>): Promise<Deployment | undefined>;
+  approveDeployment(id: number, userId: number): Promise<Deployment | undefined>;
+  
+  // Metrics methods
+  getMetricsByDeploymentId(deploymentId: number): Promise<Metric[]>;
+  createMetric(metric: InsertMetric): Promise<Metric>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private projects: Map<number, Project>;
-  private contactForms: Map<number, ContactForm>;
-  
-  private userIdCounter: number;
-  private projectIdCounter: number;
-  private contactFormIdCounter: number;
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.SessionStore;
 
   constructor() {
-    this.users = new Map();
-    this.projects = new Map();
-    this.contactForms = new Map();
-    
-    this.userIdCounter = 1;
-    this.projectIdCounter = 1;
-    this.contactFormIdCounter = 1;
-    
-    // Initialize with some demo data
-    this.initializeData();
-  }
-
-  private initializeData() {
-    // Initialize demo projects
-    const demoProjects: InsertProject[] = [
-      {
-        title: "Containerized App CI/CD Pipeline",
-        description: "A comprehensive CI/CD pipeline for a containerized application, featuring automated testing, security scanning, and deployment to Kubernetes.",
-        status: "completed",
-        type: "GitHub Repository",
-        features: ["GitHub Actions workflow for CI/CD pipeline", "Docker containerization with multi-stage builds", "Automated testing (unit, integration, E2E)", "Kubernetes deployment with Helm charts", "Prometheus & Grafana monitoring stack"],
-        technologies: ["Docker", "GitHub Actions", "Kubernetes", "Terraform", "Prometheus"],
-        link: "https://github.com/demo/cicd-pipeline",
-        linkText: "View GitHub Repository",
-        codeSnippet: null
-      },
-      {
-        title: "Infrastructure as Code - AWS Environment",
-        description: "A complete AWS infrastructure setup using Terraform with multi-environment support (dev, staging, production) and automated deployment.",
-        status: "in-progress",
-        type: "AWS-based Project",
-        features: ["Terraform modules for reusable components", "Multi-account AWS architecture", "VPC, networking, and security groups", "ECS/EKS cluster for containerized workloads", "RDS databases with automated backups", "CI/CD pipeline for infrastructure changes", "CloudWatch/Grafana monitoring dashboards", "Cost optimization and tagging strategy"],
-        technologies: ["Terraform", "AWS", "GitHub Actions", "CloudWatch", "ECS/EKS"],
-        link: "https://github.com/demo/terraform-aws",
-        linkText: "View Project Details",
-        codeSnippet: `module "vpc" {\n  source  = "terraform-aws-modules/vpc/aws"\n  version = "~> 3.0"\n\n  name = "main-vpc-\${var.environment}"\n  cidr = "10.0.0.0/16"\n\n  azs             = ["us-west-2a", "us-west-2b", "us-west-2c"]\n  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]\n  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]\n\n  enable_nat_gateway     = true\n  single_nat_gateway     = var.environment != "production"\n  enable_vpn_gateway     = false\n  enable_dns_hostnames   = true\n  enable_dns_support     = true\n\n  tags = {\n    Environment = var.environment\n    Project     = var.project_name\n    ManagedBy   = "terraform"\n  }\n}`
-      }
-    ];
-    
-    demoProjects.forEach(project => this.createProject(project));
+    const PostgresSessionStore = connectPg(session);
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
   }
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userIdCounter++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
   }
   
   // Project methods
   async getAllProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+    return await db.select().from(projects);
   }
   
   async getProjectById(id: number): Promise<Project | undefined> {
-    return this.projects.get(id);
-  }
-  
-  async createProject(insertProject: InsertProject): Promise<Project> {
-    const id = this.projectIdCounter++;
-    const now = new Date();
-    
-    const project: Project = {
-      ...insertProject,
-      id,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    this.projects.set(id, project);
+    const [project] = await db.select().from(projects).where(eq(projects.id, id));
     return project;
   }
   
-  async updateProject(id: number, projectUpdate: Partial<InsertProject>): Promise<Project | undefined> {
-    const existingProject = this.projects.get(id);
-    
-    if (!existingProject) {
-      return undefined;
-    }
-    
-    const updatedProject: Project = {
-      ...existingProject,
-      ...projectUpdate,
-      id,
-      updatedAt: new Date()
-    };
-    
-    this.projects.set(id, updatedProject);
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const [project] = await db.insert(projects).values(insertProject).returning();
+    return project;
+  }
+  
+  async updateProject(id: number, projectData: Partial<InsertProject>): Promise<Project | undefined> {
+    const [updatedProject] = await db
+      .update(projects)
+      .set({ ...projectData, updatedAt: new Date() })
+      .where(eq(projects.id, id))
+      .returning();
     return updatedProject;
   }
   
   async deleteProject(id: number): Promise<boolean> {
-    return this.projects.delete(id);
+    const result = await db.delete(projects).where(eq(projects.id, id)).returning({ id: projects.id });
+    return result.length > 0;
   }
   
-  // Contact form methods
-  async saveContactForm(insertContactForm: InsertContactForm): Promise<ContactForm> {
-    const id = this.contactFormIdCounter++;
-    const now = new Date();
-    
-    const contactForm: ContactForm = {
-      ...insertContactForm,
-      id,
-      createdAt: now
-    };
-    
-    this.contactForms.set(id, contactForm);
-    return contactForm;
+  // Pipeline methods
+  async getAllPipelines(): Promise<Pipeline[]> {
+    return await db.select().from(pipelines);
   }
-  
-  async getContactForms(): Promise<ContactForm[]> {
-    return Array.from(this.contactForms.values());
+
+  async getPipelinesByProjectId(projectId: number): Promise<Pipeline[]> {
+    return await db.select().from(pipelines).where(eq(pipelines.projectId, projectId));
+  }
+
+  async getPipelineById(id: number): Promise<Pipeline | undefined> {
+    const [pipeline] = await db.select().from(pipelines).where(eq(pipelines.id, id));
+    return pipeline;
+  }
+
+  async createPipeline(insertPipeline: InsertPipeline): Promise<Pipeline> {
+    const [pipeline] = await db.insert(pipelines).values(insertPipeline).returning();
+    return pipeline;
+  }
+
+  async updatePipeline(id: number, pipelineData: Partial<InsertPipeline>): Promise<Pipeline | undefined> {
+    const [updatedPipeline] = await db
+      .update(pipelines)
+      .set({ ...pipelineData, updatedAt: new Date() })
+      .where(eq(pipelines.id, id))
+      .returning();
+    return updatedPipeline;
+  }
+
+  async deletePipeline(id: number): Promise<boolean> {
+    const result = await db.delete(pipelines).where(eq(pipelines.id, id)).returning({ id: pipelines.id });
+    return result.length > 0;
+  }
+
+  // Deployment methods
+  async getAllDeployments(limit?: number): Promise<Deployment[]> {
+    const query = db.select().from(deployments).orderBy(desc(deployments.startedAt));
+    
+    if (limit) {
+      return await query.limit(limit);
+    }
+    
+    return await query;
+  }
+
+  async getDeploymentsByPipelineId(pipelineId: number): Promise<Deployment[]> {
+    return await db
+      .select()
+      .from(deployments)
+      .where(eq(deployments.pipelineId, pipelineId))
+      .orderBy(desc(deployments.startedAt));
+  }
+
+  async getDeploymentById(id: number): Promise<Deployment | undefined> {
+    const [deployment] = await db.select().from(deployments).where(eq(deployments.id, id));
+    return deployment;
+  }
+
+  async getDeploymentsByEnvironment(environment: string): Promise<Deployment[]> {
+    return await db
+      .select()
+      .from(deployments)
+      .where(eq(deployments.environment, environment))
+      .orderBy(desc(deployments.startedAt));
+  }
+
+  async getDeploymentsByStatus(status: string): Promise<Deployment[]> {
+    return await db
+      .select()
+      .from(deployments)
+      .where(eq(deployments.status, status))
+      .orderBy(desc(deployments.startedAt));
+  }
+
+  async getDeploymentsForApproval(): Promise<Deployment[]> {
+    return await db
+      .select()
+      .from(deployments)
+      .where(
+        and(
+          eq(deployments.requiresApproval, true),
+          eq(deployments.isApproved, false),
+          eq(deployments.status, 'pending')
+        )
+      )
+      .orderBy(desc(deployments.startedAt));
+  }
+
+  async getDeploymentsByDateRange(startDate: Date, endDate: Date): Promise<Deployment[]> {
+    return await db
+      .select()
+      .from(deployments)
+      .where(
+        and(
+          gte(deployments.startedAt, startDate),
+          lte(deployments.startedAt, endDate)
+        )
+      )
+      .orderBy(desc(deployments.startedAt));
+  }
+
+  async createDeployment(insertDeployment: InsertDeployment): Promise<Deployment> {
+    const [deployment] = await db.insert(deployments).values(insertDeployment).returning();
+    return deployment;
+  }
+
+  async updateDeployment(id: number, deploymentData: Partial<Deployment>): Promise<Deployment | undefined> {
+    const [updatedDeployment] = await db
+      .update(deployments)
+      .set(deploymentData)
+      .where(eq(deployments.id, id))
+      .returning();
+    return updatedDeployment;
+  }
+
+  async approveDeployment(id: number, userId: number): Promise<Deployment | undefined> {
+    const [updatedDeployment] = await db
+      .update(deployments)
+      .set({
+        isApproved: true,
+        approvedById: userId,
+        approvedAt: new Date()
+      })
+      .where(eq(deployments.id, id))
+      .returning();
+    return updatedDeployment;
+  }
+
+  // Metrics methods
+  async getMetricsByDeploymentId(deploymentId: number): Promise<Metric[]> {
+    return await db
+      .select()
+      .from(metrics)
+      .where(eq(metrics.deploymentId, deploymentId));
+  }
+
+  async createMetric(insertMetric: InsertMetric): Promise<Metric> {
+    const [metric] = await db.insert(metrics).values(insertMetric).returning();
+    return metric;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
