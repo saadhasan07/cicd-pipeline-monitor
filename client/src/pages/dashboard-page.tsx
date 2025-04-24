@@ -39,10 +39,12 @@ export default function DashboardPage() {
       {/* Animated background */}
       <AnimatedBackground />
       
-      <header className="flex flex-col md:flex-row justify-between items-center mb-10 bg-muted/60 backdrop-blur-sm p-6 rounded-xl shadow-md animate-slideInUp border border-white/20">
+      <header className="flex flex-col md:flex-row justify-between items-center mb-10 bg-muted/60 backdrop-blur-sm p-6 rounded-xl shadow-md animate-slideInUp border border-white/20 relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-center gap-6">
-          <div className="w-32 h-32 mr-3 flex-shrink-0">
-            <AnimatedCICDLogo />
+          <div className="w-16 h-16 md:w-20 md:h-20 mr-3 flex-shrink-0 bg-white/80 rounded-full flex items-center justify-center shadow-md">
+            <div className="w-14 h-14 md:w-18 md:h-18 overflow-hidden">
+              <AnimatedCICDLogo />
+            </div>
           </div>
           <div>
             <h1 className="text-4xl font-bold gradient-text text-center md:text-left">CI/CD Pipeline Monitor</h1>
