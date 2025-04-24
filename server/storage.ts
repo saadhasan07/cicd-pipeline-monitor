@@ -11,9 +11,12 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
+// Define SessionStore type
+type SessionStore = ReturnType<typeof connectPg> extends new (...args: any[]) => infer R ? R : never;
+
 export interface IStorage {
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: SessionStore;
 
   // User methods
   getUser(id: number): Promise<User | undefined>;
@@ -57,7 +60,7 @@ export interface IStorage {
 
 // Database storage implementation
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: SessionStore;
 
   constructor() {
     const PostgresSessionStore = connectPg(session);
@@ -191,7 +194,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(deployments)
-      .where(eq(deployments.environment, environment))
+      .where(eq(deployments.environment, environment as any))
       .orderBy(desc(deployments.startedAt));
   }
 
@@ -199,7 +202,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(deployments)
-      .where(eq(deployments.status, status))
+      .where(eq(deployments.status, status as any))
       .orderBy(desc(deployments.startedAt));
   }
 
@@ -211,7 +214,7 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(deployments.requiresApproval, true),
           eq(deployments.isApproved, false),
-          eq(deployments.status, 'pending')
+          eq(deployments.status, 'pending' as any)
         )
       )
       .orderBy(desc(deployments.startedAt));

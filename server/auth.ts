@@ -150,7 +150,7 @@ export function setupAuth(app: Express) {
 }
 
 // Middleware to check if user is authenticated
-export function isAuthenticated(req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
   if (req.isAuthenticated()) {
     return next();
   }
@@ -161,8 +161,8 @@ export function isAuthenticated(req: Express.Request, res: Express.Response, nex
 }
 
 // Middleware to check if user has admin role
-export function isAdmin(req: Express.Request, res: Express.Response, next: Express.NextFunction) {
-  if (req.isAuthenticated() && (req.user as User).role === 'admin') {
+export function isAdmin(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated() && (req.user as UserType).role === 'admin') {
     return next();
   }
   res.status(403).json({ 
