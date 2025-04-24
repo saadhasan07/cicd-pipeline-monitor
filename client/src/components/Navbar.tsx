@@ -19,31 +19,23 @@ export default function Navbar() {
             <nav className="mr-4">
               <ul className="flex space-x-6">
                 <li>
-                  <Link href="/">
-                    <a className={`${location === "/" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
-                      Home
-                    </a>
+                  <Link href="/" className={`${location === "/" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
+                    Home
                   </Link>
                 </li>
                 <li>
-                  <Link href="/projects">
-                    <a className={`${location === "/projects" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
-                      Projects
-                    </a>
+                  <Link href="/projects" className={`${location === "/projects" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
+                    Projects
                   </Link>
                 </li>
                 <li>
-                  <Link href="/skills">
-                    <a className={`${location === "/skills" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
-                      Skills
-                    </a>
+                  <Link href="/skills" className={`${location === "/skills" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
+                    Skills
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact">
-                    <a className={`${location === "/contact" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
-                      Contact
-                    </a>
+                  <Link href="/contact" className={`${location === "/contact" ? "text-primary-300" : "text-white"} hover:text-primary-300 transition-colors`}>
+                    Contact
                   </Link>
                 </li>
               </ul>
