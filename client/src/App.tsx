@@ -2,20 +2,16 @@ import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import Home from "@/pages/Home";
-import Projects from "@/pages/Projects";
-import Skills from "@/pages/Skills";
-import Contact from "@/pages/Contact";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import DashboardPage from "@/pages/dashboard-page";
+import AuthPage from "@/pages/auth-page";
+import { ProtectedRoute } from "@/lib/protected-route";
+import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/projects" component={Projects} />
-      <Route path="/skills" component={Skills} />
-      <Route path="/contact" component={Contact} />
+      <ProtectedRoute path="/" component={DashboardPage} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -23,16 +19,14 @@ function Router() {
 
 function App() {
   return (
-    <TooltipProvider>
-      <Toaster />
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <div className="flex-1">
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <div className="min-h-screen bg-background">
           <Router />
         </div>
-        <Footer />
-      </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </AuthProvider>
   );
 }
 
