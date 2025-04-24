@@ -148,7 +148,7 @@ export default function AnimatedPipeline() {
       
       <div className="flex items-center justify-between">
         {stages.map((stage, i) => (
-          <React.Fragment key={stage.id}>
+          <div key={stage.id} className="flex-1 flex flex-col items-center">
             <div className="flex flex-col items-center justify-center">
               <div 
                 className={`flex items-center justify-center p-3 rounded-full mb-2 border ${getStatusStyles(stage.status)}`}
@@ -168,7 +168,7 @@ export default function AnimatedPipeline() {
             
             {/* Connector lines between stages */}
             {i < stages.length - 1 && (
-              <div className="flex-1 mx-1 flex items-center justify-center">
+              <div className="flex-1 mx-1 flex items-center justify-center mt-2 w-full">
                 <div 
                   className={`h-0.5 w-full ${
                     stages[i].status === 'success' ? 'bg-green-400' : 'bg-gray-200'
@@ -182,7 +182,7 @@ export default function AnimatedPipeline() {
                 </div>
               </div>
             )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
       
