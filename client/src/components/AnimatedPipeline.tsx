@@ -186,15 +186,17 @@ export default function AnimatedPipeline() {
         ))}
       </div>
       
-      <style jsx>{`
-        @keyframes bounce-horizontal {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(5px); }
-        }
-        .animate-bounce-horizontal {
-          animation: bounce-horizontal 1s infinite;
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes bounce-horizontal {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+          }
+          .animate-bounce-horizontal {
+            animation: bounce-horizontal 1s infinite;
+          }
+        `
+      }} />
     </div>
   );
 }
