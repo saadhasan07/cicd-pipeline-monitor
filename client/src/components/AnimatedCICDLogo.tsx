@@ -19,9 +19,9 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
     let angle = 0;
     let circleProgress = 0;
     
-    // Colors from our theme
-    const primaryColor = 'hsl(25, 95%, 53%)'; // Orange
-    const secondaryColor = 'hsl(199, 84%, 60%)'; // Sky blue
+    // Colors - using only sky blue theme as requested
+    const skyBlueColor = 'hsl(199, 84%, 60%)'; // Sky blue
+    const skyBlueColorLight = 'hsl(199, 84%, 75%)'; // Lighter sky blue for accents
     
     // Animation frame function
     const draw = () => {
@@ -38,8 +38,8 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
       
       // Left loop - continuous cycle (Development)
       ctx.beginPath();
-      ctx.strokeStyle = secondaryColor;
-      ctx.shadowColor = secondaryColor;
+      ctx.strokeStyle = skyBlueColor;
+      ctx.shadowColor = skyBlueColor;
       ctx.shadowBlur = 8;
       for (let i = 0; i <= Math.PI * 2; i += 0.01) {
         const progress = (i / (Math.PI * 2));
@@ -58,8 +58,8 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
       
       // Right loop - continuous cycle (Deployment)
       ctx.beginPath();
-      ctx.strokeStyle = primaryColor;
-      ctx.shadowColor = primaryColor;
+      ctx.strokeStyle = skyBlueColorLight;
+      ctx.shadowColor = skyBlueColorLight;
       ctx.shadowBlur = 8;
       for (let i = 0; i <= Math.PI * 2; i += 0.01) {
         const progress = (i / (Math.PI * 2));
@@ -93,8 +93,8 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
       
       // Draw the crossing lines with gradient
       const gradient = ctx.createLinearGradient(leftPoint.x, leftPoint.y, rightPoint.x, rightPoint.y);
-      gradient.addColorStop(0, secondaryColor);
-      gradient.addColorStop(1, primaryColor);
+      gradient.addColorStop(0, skyBlueColor);
+      gradient.addColorStop(1, skyBlueColorLight);
       
       // Top connecting line
       ctx.beginPath();
@@ -143,8 +143,8 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
         
         // Draw dot
         ctx.beginPath();
-        ctx.fillStyle = index % 2 === 0 ? primaryColor : secondaryColor;
-        ctx.shadowColor = index % 2 === 0 ? primaryColor : secondaryColor;
+        ctx.fillStyle = index % 2 === 0 ? skyBlueColorLight : skyBlueColor;
+        ctx.shadowColor = index % 2 === 0 ? skyBlueColorLight : skyBlueColor;
         ctx.shadowBlur = 15;
         ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fill();
@@ -152,7 +152,7 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
         // Draw pulse effect
         const pulseSize = (Math.sin(angle * 3 + index) + 1) * 5 + 3;
         ctx.beginPath();
-        ctx.fillStyle = index % 2 === 0 ? `${primaryColor}30` : `${secondaryColor}30`;
+        ctx.fillStyle = index % 2 === 0 ? `${skyBlueColorLight}30` : `${skyBlueColor}30`;
         ctx.arc(x, y, pulseSize, 0, Math.PI * 2);
         ctx.fill();
       });
@@ -163,11 +163,11 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
       ctx.textAlign = "center";
       
       // CI on left loop
-      ctx.fillStyle = secondaryColor;
+      ctx.fillStyle = skyBlueColor;
       ctx.fillText("CI", centerX - radius * 0.8, centerY);
       
       // CD on right loop
-      ctx.fillStyle = primaryColor;
+      ctx.fillStyle = skyBlueColorLight;
       ctx.fillText("CD", centerX + radius * 0.8, centerY);
       
       // Update animation variables
