@@ -68,37 +68,41 @@ export default function AuthPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Column: Auth Forms */}
-      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-6 lg:p-10">
+      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-6 lg:p-10 animate-fadeIn">
         <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold mb-6 text-center">
+          <h1 className="text-4xl font-bold mb-6 text-center gradient-text">
             CI/CD Pipeline Monitor
           </h1>
           
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "register")}>
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-6 overflow-hidden rounded-full shadow-md">
+              <TabsTrigger value="login" className="font-medium py-2.5 button-hover-effect">Login</TabsTrigger>
+              <TabsTrigger value="register" className="font-medium py-2.5 button-hover-effect">Register</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="login">
-              <Card>
+            <TabsContent value="login" className="animate-slideInUp">
+              <Card className="card-hover-effect border-t-4 border-t-primary shadow-lg">
                 <CardHeader>
-                  <CardTitle>Login</CardTitle>
+                  <CardTitle className="text-2xl">Welcome Back</CardTitle>
                   <CardDescription>
                     Sign in to your account to manage CI/CD pipelines
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Form {...loginForm}>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-5">
                       <FormField
                         control={loginForm.control}
                         name="username"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
+                          <FormItem className="transition-all duration-200 focus-within:scale-105">
+                            <FormLabel className="font-medium">Username</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your username" {...field} />
+                              <Input 
+                                placeholder="Enter your username" 
+                                className="rounded-lg" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -108,10 +112,15 @@ export default function AuthPage() {
                         control={loginForm.control}
                         name="password"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
+                          <FormItem className="transition-all duration-200 focus-within:scale-105">
+                            <FormLabel className="font-medium">Password</FormLabel>
                             <FormControl>
-                              <Input type="password" placeholder="Enter your password" {...field} />
+                              <Input 
+                                type="password" 
+                                placeholder="Enter your password" 
+                                className="rounded-lg" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -119,12 +128,12 @@ export default function AuthPage() {
                       />
                       <Button 
                         type="submit" 
-                        className="w-full" 
+                        className="w-full py-6 rounded-lg font-medium text-md button-hover-effect animate-pulse-subtle" 
                         disabled={isLoading}
                       >
                         {isLoading ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             Logging in...
                           </>
                         ) : (
@@ -137,25 +146,29 @@ export default function AuthPage() {
               </Card>
             </TabsContent>
             
-            <TabsContent value="register">
-              <Card>
+            <TabsContent value="register" className="animate-slideInUp">
+              <Card className="card-hover-effect border-t-4 border-t-secondary shadow-lg">
                 <CardHeader>
-                  <CardTitle>Create an account</CardTitle>
+                  <CardTitle className="text-2xl">Create an account</CardTitle>
                   <CardDescription>
                     Register to start managing your CI/CD pipelines
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Form {...registerForm}>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-5">
                       <FormField
                         control={registerForm.control}
                         name="username"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
+                          <FormItem className="transition-all duration-200 focus-within:scale-105">
+                            <FormLabel className="font-medium">Username</FormLabel>
                             <FormControl>
-                              <Input placeholder="Choose a username" {...field} />
+                              <Input 
+                                placeholder="Choose a username" 
+                                className="rounded-lg" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -165,10 +178,15 @@ export default function AuthPage() {
                         control={registerForm.control}
                         name="email"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
+                          <FormItem className="transition-all duration-200 focus-within:scale-105">
+                            <FormLabel className="font-medium">Email</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="Enter your email" {...field} />
+                              <Input 
+                                type="email" 
+                                placeholder="Enter your email" 
+                                className="rounded-lg" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -178,10 +196,14 @@ export default function AuthPage() {
                         control={registerForm.control}
                         name="fullName"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name (optional)</FormLabel>
+                          <FormItem className="transition-all duration-200 focus-within:scale-105">
+                            <FormLabel className="font-medium">Full Name (optional)</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your full name" {...field} />
+                              <Input 
+                                placeholder="Enter your full name" 
+                                className="rounded-lg" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -191,10 +213,15 @@ export default function AuthPage() {
                         control={registerForm.control}
                         name="password"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
+                          <FormItem className="transition-all duration-200 focus-within:scale-105">
+                            <FormLabel className="font-medium">Password</FormLabel>
                             <FormControl>
-                              <Input type="password" placeholder="Create a password" {...field} />
+                              <Input 
+                                type="password" 
+                                placeholder="Create a password" 
+                                className="rounded-lg" 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -202,12 +229,12 @@ export default function AuthPage() {
                       />
                       <Button 
                         type="submit" 
-                        className="w-full" 
+                        className="w-full py-6 rounded-lg font-medium text-md button-hover-effect animate-pulse-subtle"
                         disabled={isLoading}
                       >
                         {isLoading ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             Creating account...
                           </>
                         ) : (
@@ -224,36 +251,36 @@ export default function AuthPage() {
       </div>
       
       {/* Right Column: Hero/Info */}
-      <div className="hidden lg:flex flex-col justify-center items-center w-1/2 p-10 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+      <div className="hidden lg:flex flex-col justify-center items-center w-1/2 p-10 gradient-bg text-white animate-fadeIn">
         <div className="max-w-md">
-          <h2 className="text-4xl font-bold mb-6">CI/CD Pipeline Monitor</h2>
-          <p className="text-xl mb-6">
+          <h2 className="text-5xl font-bold mb-6 animate-slideInUp">CI/CD Pipeline Monitor</h2>
+          <p className="text-xl mb-8 opacity-90 animate-slideInUp" style={{animationDelay: "0.1s"}}>
             A powerful platform for monitoring and managing your CI/CD pipelines.
           </p>
-          <ul className="space-y-4 mb-8">
-            <li className="flex items-start">
-              <div className="mr-2 mt-1 bg-blue-400 rounded-full p-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-800">
+          <ul className="space-y-6 mb-10">
+            <li className="flex items-start animate-slideInUp" style={{animationDelay: "0.2s"}}>
+              <div className="mr-3 mt-1 bg-white/20 rounded-full p-1.5 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
                   <path d="M20 6L9 17l-5-5"></path>
                 </svg>
               </div>
-              <span>Track deployments across environments</span>
+              <span className="text-lg">Track deployments across environments</span>
             </li>
-            <li className="flex items-start">
-              <div className="mr-2 mt-1 bg-blue-400 rounded-full p-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-800">
+            <li className="flex items-start animate-slideInUp" style={{animationDelay: "0.3s"}}>
+              <div className="mr-3 mt-1 bg-white/20 rounded-full p-1.5 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
                   <path d="M20 6L9 17l-5-5"></path>
                 </svg>
               </div>
-              <span>Monitor build statuses and metrics</span>
+              <span className="text-lg">Monitor build statuses and metrics</span>
             </li>
-            <li className="flex items-start">
-              <div className="mr-2 mt-1 bg-blue-400 rounded-full p-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-800">
+            <li className="flex items-start animate-slideInUp" style={{animationDelay: "0.4s"}}>
+              <div className="mr-3 mt-1 bg-white/20 rounded-full p-1.5 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
                   <path d="M20 6L9 17l-5-5"></path>
                 </svg>
               </div>
-              <span>Manage approvals for production deployments</span>
+              <span className="text-lg">Manage approvals for production deployments</span>
             </li>
           </ul>
         </div>

@@ -3,49 +3,49 @@
 @tailwind utilities;
 
 :root {
-      --background: 0 0% 100%;
---foreground: 20 14.3% 4.1%;
---muted: 60 4.8% 95.9%;
---muted-foreground: 25 5.3% 44.7%;
---popover: 0 0% 100%;
---popover-foreground: 20 14.3% 4.1%;
---card: 0 0% 100%;
---card-foreground: 20 14.3% 4.1%;
---border: 20 5.9% 90%;
---input: 20 5.9% 90%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 60 4.8% 95.9%;
---secondary-foreground: 24 9.8% 10%;
---accent: 60 4.8% 95.9%;
---accent-foreground: 24 9.8% 10%;
---destructive: 0 84.2% 60.2%;
---destructive-foreground: 60 9.1% 97.8%;
---ring: 20 14.3% 4.1%;
---radius: 0.5rem;
+  --background: 0 0% 100%; /* White */
+  --foreground: 20 14.3% 4.1%;
+  --muted: 199 84% 95%;  /* Light sky blue */
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%; /* White */
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%; /* White */
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 199 84% 90%; /* Light sky blue border */
+  --input: 199 84% 95%; /* Light sky blue input */
+  --primary: 25 95% 53%; /* Orange */
+  --primary-foreground: 0 0% 100%; /* White text on orange */
+  --secondary: 199 84% 60%; /* Sky blue */
+  --secondary-foreground: 0 0% 100%; /* White text on sky blue */
+  --accent: 25 95% 93%; /* Light orange */
+  --accent-foreground: 25 95% 33%; /* Dark orange text on light orange */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 199 84% 60%; /* Sky blue ring */
+  --radius: 0.5rem;
   }
   .dark {
-      --background: 240 10% 3.9%;
---foreground: 0 0% 98%;
---muted: 240 3.7% 15.9%;
---muted-foreground: 240 5% 64.9%;
---popover: 240 10% 3.9%;
---popover-foreground: 0 0% 98%;
---card: 240 10% 3.9%;
---card-foreground: 0 0% 98%;
---border: 240 3.7% 15.9%;
---input: 240 3.7% 15.9%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 240 3.7% 15.9%;
---secondary-foreground: 0 0% 98%;
---accent: 240 3.7% 15.9%;
---accent-foreground: 0 0% 98%;
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 0% 98%;
---ring: 240 4.9% 83.9%;
---radius: 0.5rem;
-  }
+  --background: 215 28% 17%; /* Dark blue-gray background */
+  --foreground: 0 0% 98%; /* Almost white text */
+  --muted: 199 50% 20%; /* Dark sky blue */
+  --muted-foreground: 199 50% 80%; /* Light sky blue text */
+  --popover: 215 28% 17%; /* Same as background */
+  --popover-foreground: 0 0% 98%; /* Almost white text */
+  --card: 215 28% 22%; /* Slightly lighter than background */
+  --card-foreground: 0 0% 98%; /* Almost white text */
+  --border: 199 50% 30%; /* Medium dark sky blue border */
+  --input: 215 28% 25%; /* Slightly lighter input fields */
+  --primary: 25 95% 53%; /* Same orange as light mode */
+  --primary-foreground: 0 0% 100%; /* White text on orange */
+  --secondary: 199 84% 45%; /* Slightly darker sky blue */
+  --secondary-foreground: 0 0% 100%; /* White text on sky blue */
+  --accent: 25 70% 33%; /* Darker orange for accent */
+  --accent-foreground: 0 0% 100%; /* White text on dark orange */
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 199 84% 45%; /* Sky blue ring */
+  --radius: 0.5rem;
+}
 
 @layer base {
   * {
@@ -55,5 +55,109 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary) / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--primary) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--primary) / 0);
+  }
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animation utility classes */
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.5s ease-out;
+}
+
+.animate-pulse-subtle {
+  animation: pulse 2s infinite;
+}
+
+.gradient-bg {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)));
+  background-size: 200% 200%;
+  animation: gradientFlow 5s ease infinite;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)));
+  background-size: 200% 200%;
+  animation: gradientFlow 5s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+/* Card hover effects */
+.card-hover-effect {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(var(--primary) / 0.1),
+              0 8px 10px -6px rgba(var(--primary) / 0.1);
+}
+
+/* Button hover effects */
+.button-hover-effect {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.button-hover-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.button-hover-effect:hover::after {
+  transform: translateX(0);
 }
 
