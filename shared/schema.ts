@@ -19,6 +19,18 @@ export const environmentEnum = pgEnum('environment', [
   'production'
 ]);
 
+export const deploymentSlotEnum = pgEnum('deployment_slot', [
+  'blue', 
+  'green'
+]);
+
+export const deploymentStrategyEnum = pgEnum('deployment_strategy', [
+  'direct',
+  'blue_green',
+  'canary',
+  'rolling'
+]);
+
 // Users table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -113,6 +125,14 @@ export const deployments = pgTable("deployments", {
   isApproved: boolean("is_approved").default(false),
   approvedById: integer("approved_by_id").references(() => users.id),
   approvedAt: timestamp("approved_at"),
+  // Blue/Green deployment fields
+  deploymentStrategy: deploymentStrategyEnum("deployment_strategy").default("direct").notNull(),
+  slot: deploymentSlotEnum("slot"),
+  isActive: boolean("is_active").default(false),
+  trafficPercentage: integer("traffic_percentage").default(0),
+  healthCheckUrl: text("health_check_url"),
+  healthCheckStatus: text("health_check_status"),
+  previousDeploymentId: integer("previous_deployment_id"),
 });
 
 export const deploymentsRelations = relations(deployments, ({ one }) => ({
@@ -128,6 +148,10 @@ export const deploymentsRelations = relations(deployments, ({ one }) => ({
     fields: [deployments.approvedById],
     references: [users.id],
   }),
+  previousDeployment: one(deployments, {
+    fields: [deployments.previousDeploymentId],
+    references: [deployments.id],
+  }),
 }));
 
 export const insertDeploymentSchema = createInsertSchema(deployments).omit({
@@ -138,6 +162,9 @@ export const insertDeploymentSchema = createInsertSchema(deployments).omit({
   isApproved: true,
   approvedById: true,
   approvedAt: true,
+  // Skip additional fields which are managed by the system
+  isActive: true,
+  healthCheckStatus: true,
 });
 
 // Metrics table
