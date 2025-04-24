@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
-  const user = userData && 'success' in userData && userData.success ? userData.user : null;
+  const user = userData && typeof userData === 'object' && 'success' in userData && userData.success ? userData.user : null;
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
@@ -63,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(["/api/user"], data);
       toast({
         title: "Success",
         description: "You have been logged in successfully",
@@ -88,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(["/api/user"], data);
       toast({
         title: "Account created",
         description: "Your account has been created successfully",

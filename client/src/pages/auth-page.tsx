@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth-new";
 import { Link, useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,7 +26,7 @@ const registerSchema = z.object({
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const { loginMutation, registerMutation, user } = useAuth();
+  const { login, register, user, isLoading } = useAuth();
   const [_, navigate] = useLocation();
 
   // Redirect if already logged in
@@ -57,12 +57,12 @@ export default function AuthPage() {
 
   // Handle login submission
   const onLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
-    await loginMutation.mutateAsync(values);
+    await login(values);
   };
 
   // Handle register submission
   const onRegisterSubmit = async (values: z.infer<typeof registerSchema>) => {
-    await registerMutation.mutateAsync(values);
+    await register(values);
   };
 
   return (
@@ -120,9 +120,9 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={loginMutation.isPending}
+                        disabled={isLoading}
                       >
-                        {loginMutation.isPending ? (
+                        {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Logging in...
@@ -203,9 +203,9 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full" 
-                        disabled={registerMutation.isPending}
+                        disabled={isLoading}
                       >
-                        {registerMutation.isPending ? (
+                        {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Creating account...

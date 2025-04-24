@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth-new";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
 
 export default function DashboardPage() {
-  const { user, logoutMutation } = useAuth();
+  const { user, logout, isLoading } = useAuth();
 
   // Mock data for initial dashboard
   // In a full implementation, we would fetch this from the API
