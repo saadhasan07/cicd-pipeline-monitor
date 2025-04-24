@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import DashboardPage from "@/pages/dashboard-page";
 import AuthPage from "@/pages/auth-page";
+import DeploymentDetails from "@/pages/deployment-details";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { AuthProvider } from "@/hooks/use-auth-new";
 
@@ -11,6 +12,7 @@ function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={DashboardPage} />
+      <ProtectedRoute path="/deployments/:id" component={DeploymentDetails} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
