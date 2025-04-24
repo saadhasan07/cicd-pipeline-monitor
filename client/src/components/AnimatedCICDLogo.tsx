@@ -10,10 +10,9 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas size to match displayed size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    // Set canvas size first
+    canvas.width = 600;  // Fixed width for better scaling 
+    canvas.height = 400; // Fixed height that matches our container
     
     // Animation variables
     let angle = 0;
@@ -262,10 +261,18 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
   }, []);
   
   return (
-    <canvas 
-      ref={canvasRef} 
-      className={`w-full h-full ${className}`}
-      style={{ maxHeight: '300px' }}
-    />
+    <div className="w-full" style={{ height: '400px', maxWidth: '800px', margin: '0 auto' }}>
+      <canvas 
+        ref={canvasRef} 
+        className={`${className}`}
+        style={{ 
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          maxWidth: '600px',
+          margin: '0 auto'
+        }}
+      />
+    </div>
   );
 }
