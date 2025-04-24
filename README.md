@@ -33,7 +33,7 @@ A modern web application for monitoring and managing CI/CD pipelines, deployment
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/cicd-pipeline-monitor.git
+   git clone https://github.com/saadhasan07/cicd-pipeline-monitor.git
    cd cicd-pipeline-monitor
    ```
 
