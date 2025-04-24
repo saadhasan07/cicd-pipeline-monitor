@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRightLeft, Activity, Server, Gauge, ChevronRightSquare } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Deployment } from '@shared/schema';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +32,9 @@ export default function BlueGreenDeployment({
   onComplete,
 }: BlueGreenDeploymentProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [deployment, setDeployment] = useState<Deployment | null>(null);
+  const [previousDeployment, setPreviousDeployment] = useState<Deployment | null>(null);
   const [trafficPercentage, setTrafficPercentage] = useState(0);
   const [blueStatus, setBlueStatus] = useState<'active' | 'standby' | 'failed'>('active');
   const [greenStatus, setGreenStatus] = useState<'deploying' | 'ready' | 'standby' | 'active' | 'failed'>('deploying');
@@ -37,49 +43,185 @@ export default function BlueGreenDeployment({
     { slot: 'green', status: 'running' },
   ]);
   const [showSwitchConfirmation, setShowSwitchConfirmation] = useState(false);
-
-  const incrementTraffic = () => {
-    if (trafficPercentage < 100) {
-      const newPercentage = Math.min(trafficPercentage + 25, 100);
-      setTrafficPercentage(newPercentage);
+  
+  // Fetch deployment data
+  useEffect(() => {
+    if (deploymentId) {
+      fetchDeployment(deploymentId);
+    }
+  }, [deploymentId]);
+  
+  const fetchDeployment = async (id: number) => {
+    try {
+      const response = await apiRequest('GET', `/api/deployments/${id}`);
+      const result = await response.json();
       
+      if (result.success && result.data) {
+        setDeployment(result.data);
+        setTrafficPercentage(result.data.trafficPercentage || 0);
+        
+        // Set statuses based on deployment data
+        const isGreen = result.data.slot === 'green';
+        
+        if (isGreen) {
+          // This is the green deployment
+          setGreenStatus(result.data.isActive ? 'active' : (result.data.status === 'success' ? 'ready' : 'deploying'));
+          setBlueStatus(result.data.isActive ? 'standby' : 'active');
+        } else {
+          // This is the blue deployment or a direct deployment
+          setBlueStatus(result.data.isActive ? 'active' : 'standby');
+          setGreenStatus('deploying');
+        }
+        
+        // If there's a previous deployment, fetch it
+        if (result.data.previousDeploymentId) {
+          fetchPreviousDeployment(result.data.previousDeploymentId);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching deployment:', error);
       toast({
-        title: 'Traffic shifted',
-        description: `${newPercentage}% of traffic now routed to green deployment`,
+        title: 'Error',
+        description: 'Failed to load deployment details',
+        variant: 'destructive',
       });
+    }
+  };
+  
+  const fetchPreviousDeployment = async (id: number) => {
+    try {
+      const response = await apiRequest('GET', `/api/deployments/${id}`);
+      const result = await response.json();
       
+      if (result.success && result.data) {
+        setPreviousDeployment(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching previous deployment:', error);
+    }
+  };
+
+  // Mutation for updating traffic percentage
+  const updateTrafficMutation = useMutation({
+    mutationFn: async (data: { trafficPercentage: number, isActive?: boolean }) => {
+      if (!deploymentId) throw new Error('No deployment ID provided');
+      
+      const response = await apiRequest('PATCH', `/api/deployments/${deploymentId}/traffic`, data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: [`/api/deployments/${deploymentId}`] });
+        
+        // If there's a previous deployment, invalidate its data too
+        if (deployment?.previousDeploymentId) {
+          queryClient.invalidateQueries({ 
+            queryKey: [`/api/deployments/${deployment.previousDeploymentId}`] 
+          });
+        }
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error updating traffic',
+        description: error.message || 'Failed to update traffic distribution',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const incrementTraffic = async () => {
+    if (!deployment || trafficPercentage >= 100) return;
+    
+    const newPercentage = Math.min(trafficPercentage + 25, 100);
+    setTrafficPercentage(newPercentage); // Optimistic update
+    
+    try {
+      // Prepare update data
+      const updateData: { trafficPercentage: number, isActive?: boolean } = {
+        trafficPercentage: newPercentage
+      };
+      
+      // If percentage reaches 100%, mark as active
       if (newPercentage === 100) {
+        updateData.isActive = true;
         setBlueStatus('standby');
         setGreenStatus('active');
       }
-    }
-  };
-
-  const decrementTraffic = () => {
-    if (trafficPercentage > 0) {
-      const newPercentage = Math.max(trafficPercentage - 25, 0);
-      setTrafficPercentage(newPercentage);
+      
+      await updateTrafficMutation.mutateAsync(updateData);
       
       toast({
         title: 'Traffic shifted',
         description: `${newPercentage}% of traffic now routed to green deployment`,
       });
-      
-      if (newPercentage === 0) {
-        setBlueStatus('active');
-        setGreenStatus('standby');
-      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setTrafficPercentage(trafficPercentage);
+      console.error('Error increasing traffic:', error);
     }
   };
 
-  const completeDeployment = () => {
-    if (trafficPercentage === 100) {
+  const decrementTraffic = async () => {
+    if (!deployment || trafficPercentage <= 0) return;
+    
+    const newPercentage = Math.max(trafficPercentage - 25, 0);
+    setTrafficPercentage(newPercentage); // Optimistic update
+    
+    try {
+      // Prepare update data
+      const updateData: { trafficPercentage: number, isActive?: boolean } = {
+        trafficPercentage: newPercentage
+      };
+      
+      // If percentage reaches 0%, mark blue as active
+      if (newPercentage === 0 && deployment.previousDeploymentId) {
+        // Mark the previous (blue) deployment as active
+        const blueResponse = await apiRequest(
+          'PATCH', 
+          `/api/deployments/${deployment.previousDeploymentId}/traffic`, 
+          { trafficPercentage: 100, isActive: true }
+        );
+        
+        setBlueStatus('active');
+        setGreenStatus('standby');
+      }
+      
+      await updateTrafficMutation.mutateAsync(updateData);
+      
       toast({
-        title: 'Deployment completed',
-        description: 'Green slot is now the active environment',
-        variant: 'default',
+        title: 'Traffic shifted',
+        description: `${newPercentage}% of traffic now routed to green deployment`,
       });
-      onComplete?.();
+    } catch (error) {
+      // Revert optimistic update on error
+      setTrafficPercentage(trafficPercentage);
+      console.error('Error decreasing traffic:', error);
+    }
+  };
+
+  const completeDeployment = async () => {
+    if (!deployment) return;
+    
+    if (trafficPercentage === 100) {
+      try {
+        // Mark the deployment as completed and fully active
+        await updateTrafficMutation.mutateAsync({ 
+          trafficPercentage: 100,
+          isActive: true 
+        });
+        
+        toast({
+          title: 'Deployment completed',
+          description: 'Green slot is now the active environment',
+          variant: 'default',
+        });
+        
+        // Call the onComplete callback if provided
+        onComplete?.();
+      } catch (error) {
+        console.error('Error completing deployment:', error);
+      }
     } else {
       toast({
         title: 'Cannot complete',
@@ -89,33 +231,89 @@ export default function BlueGreenDeployment({
     }
   };
 
-  const switchEnvironments = () => {
+  const switchEnvironments = async () => {
     setShowSwitchConfirmation(false);
     
-    // Swap blue and green statuses
-    const prevBlueStatus = blueStatus;
-    setBlueStatus(greenStatus === 'active' ? 'standby' : 'active');
-    setGreenStatus(prevBlueStatus === 'active' ? 'standby' : 'active');
+    if (!deployment || !deployment.previousDeploymentId) return;
     
-    // Update traffic percentage accordingly
-    setTrafficPercentage(prevBlueStatus === 'active' ? 0 : 100);
-    
-    toast({
-      title: 'Environments switched',
-      description: `Active slot is now ${prevBlueStatus !== 'active' ? 'blue' : 'green'}`,
-    });
+    try {
+      // Determine which deployment should be active
+      const makeGreenActive = blueStatus === 'active';
+      
+      // Update green deployment
+      await updateTrafficMutation.mutateAsync({ 
+        trafficPercentage: makeGreenActive ? 100 : 0,
+        isActive: makeGreenActive
+      });
+      
+      // Update blue deployment (previous deployment)
+      await apiRequest(
+        'PATCH', 
+        `/api/deployments/${deployment.previousDeploymentId}/traffic`, 
+        { 
+          trafficPercentage: makeGreenActive ? 0 : 100,
+          isActive: !makeGreenActive 
+        }
+      );
+      
+      // Update UI
+      const prevBlueStatus = blueStatus;
+      setBlueStatus(greenStatus === 'active' ? 'standby' : 'active');
+      setGreenStatus(prevBlueStatus === 'active' ? 'standby' : 'active');
+      setTrafficPercentage(prevBlueStatus === 'active' ? 100 : 0);
+      
+      toast({
+        title: 'Environments switched',
+        description: `Active slot is now ${prevBlueStatus === 'active' ? 'green' : 'blue'}`,
+      });
+    } catch (error) {
+      console.error('Error switching environments:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to switch environments',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const rollbackDeployment = () => {
-    setTrafficPercentage(0);
-    setBlueStatus('active');
-    setGreenStatus('failed');
+  const rollbackDeployment = async () => {
+    if (!deployment || !deployment.previousDeploymentId) return;
     
-    toast({
-      title: 'Deployment rolled back',
-      description: 'All traffic returned to blue environment',
-      variant: 'destructive',
-    });
+    try {
+      // Set green deployment to 0% traffic and not active
+      await updateTrafficMutation.mutateAsync({ 
+        trafficPercentage: 0,
+        isActive: false
+      });
+      
+      // Set blue deployment to 100% traffic and active
+      await apiRequest(
+        'PATCH', 
+        `/api/deployments/${deployment.previousDeploymentId}/traffic`, 
+        { 
+          trafficPercentage: 100,
+          isActive: true 
+        }
+      );
+      
+      // Update UI state
+      setTrafficPercentage(0);
+      setBlueStatus('active');
+      setGreenStatus('failed');
+      
+      toast({
+        title: 'Deployment rolled back',
+        description: 'All traffic returned to blue environment',
+        variant: 'destructive',
+      });
+    } catch (error) {
+      console.error('Error rolling back deployment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to rollback deployment',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getSlotColor = (slot: 'blue' | 'green', status: string) => {
