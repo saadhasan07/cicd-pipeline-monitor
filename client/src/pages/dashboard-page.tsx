@@ -22,6 +22,7 @@ import PulsingAnimation from "@/components/PulsingAnimation";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import AnimatedPipeline from "@/components/AnimatedPipeline";
 import MetricsDashboard from "@/components/MetricsDashboard";
+import NotificationCenter from "@/components/NotificationCenter";
 
 export default function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
@@ -54,21 +55,25 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-        <PulsingAnimation delay={1} color="primary" className="mt-4 md:mt-0">
-          <Button 
-            variant="outline" 
-            onClick={() => logout()}
-            disabled={isLoading}
-            className="button-hover-effect px-6 py-6 rounded-lg flex items-center shadow-md"
-          >
-            {isLoading ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <LogOut className="mr-2 h-5 w-5" />
-            )}
-            <span className="font-medium">Logout</span>
-          </Button>
-        </PulsingAnimation>
+        <div className="flex items-center gap-4 mt-4 md:mt-0">
+          <NotificationCenter />
+          
+          <PulsingAnimation delay={1} color="primary">
+            <Button 
+              variant="outline" 
+              onClick={() => logout()}
+              disabled={isLoading}
+              className="button-hover-effect px-6 py-6 rounded-lg flex items-center shadow-md"
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <LogOut className="mr-2 h-5 w-5" />
+              )}
+              <span className="font-medium">Logout</span>
+            </Button>
+          </PulsingAnimation>
+        </div>
       </header>
 
       {/* Stats Cards */}

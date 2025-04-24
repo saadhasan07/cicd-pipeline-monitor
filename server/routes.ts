@@ -927,6 +927,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==== Notifications Routes ====
+  
+  // Get notifications
+  app.get("/api/notifications", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // In a real implementation, we would fetch notifications from the database
+      // For now, we'll return a hardcoded list of demo notifications
+      const now = new Date();
+      
+      const notifications = [
+        {
+          id: 1,
+          type: 'success',
+          title: 'Deployment Completed',
+          message: 'Deployment to production completed successfully',
+          timestamp: new Date(now.getTime() - 1000 * 60 * 15).toISOString(),
+          read: false,
+          deploymentId: 12
+        },
+        {
+          id: 2,
+          type: 'warning',
+          title: 'Approval Required',
+          message: 'Production deployment #15 requires your approval',
+          timestamp: new Date(now.getTime() - 1000 * 60 * 45).toISOString(),
+          read: false,
+          deploymentId: 15
+        },
+        {
+          id: 3,
+          type: 'error',
+          title: 'Deployment Failed',
+          message: 'Staging deployment failed due to test errors',
+          timestamp: new Date(now.getTime() - 1000 * 60 * 120).toISOString(),
+          read: true,
+          deploymentId: 14
+        },
+        {
+          id: 4,
+          type: 'info',
+          title: 'New Pipeline Created',
+          message: `User ${req.user?.username || 'Alex'} created a new pipeline for Project B`,
+          timestamp: new Date(now.getTime() - 1000 * 60 * 240).toISOString(),
+          read: true
+        }
+      ];
+      
+      res.status(200).json({
+        success: true,
+        data: notifications
+      });
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+  
+  // Mark notification as read
+  app.patch("/api/notifications/:id/read", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      if (isNaN(notificationId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid notification ID"
+        });
+      }
+      
+      // In a real implementation, we would update the database
+      // For now, we'll just return success
+      
+      res.status(200).json({
+        success: true,
+        message: "Notification marked as read"
+      });
+    } catch (error) {
+      console.error("Error updating notification:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+  
+  // Mark all notifications as read
+  app.post("/api/notifications/read-all", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // In a real implementation, we would update the database
+      // For now, we'll just return success
+      
+      res.status(200).json({
+        success: true,
+        message: "All notifications marked as read"
+      });
+    } catch (error) {
+      console.error("Error updating notifications:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+
   // ==== Users Routes ====
 
   // Get all users (admin only)
