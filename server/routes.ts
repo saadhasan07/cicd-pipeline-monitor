@@ -5,7 +5,8 @@ import {
   insertProjectSchema, 
   insertPipelineSchema, 
   insertDeploymentSchema, 
-  insertMetricSchema
+  insertMetricSchema,
+  type Deployment
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -586,6 +587,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       handleValidationError(error, res);
+    }
+  });
+
+  // Update blue/green deployment traffic percentage
+  app.patch("/api/deployments/:id/traffic", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid deployment ID"
+        });
+      }
+      
+      const { trafficPercentage, isActive, previousDeploymentId } = req.body;
+      if (trafficPercentage === undefined) {
+        return res.status(400).json({
+          success: false,
+          message: "Traffic percentage is required"
+        });
+      }
+      
+      // Validate traffic percentage is between 0 and 100
+      if (trafficPercentage < 0 || trafficPercentage > 100) {
+        return res.status(400).json({
+          success: false,
+          message: "Traffic percentage must be between 0 and 100"
+        });
+      }
+      
+      const deployment = await storage.getDeploymentById(id);
+      if (!deployment) {
+        return res.status(404).json({
+          success: false,
+          message: "Deployment not found"
+        });
+      }
+      
+      // Ensure this is a blue/green deployment
+      if (deployment.deploymentStrategy !== 'blue_green') {
+        return res.status(400).json({
+          success: false,
+          message: "This deployment is not configured for blue/green deployment strategy"
+        });
+      }
+      
+      // Prepare update object with traffic percentage and optional isActive flag
+      const updateData: Partial<Deployment> = { trafficPercentage };
+      
+      // If isActive is explicitly set, include it in the update
+      if (isActive !== undefined) {
+        updateData.isActive = isActive;
+      }
+      
+      // If we're updating the previous deployment relationship, include it
+      if (previousDeploymentId !== undefined) {
+        updateData.previousDeploymentId = previousDeploymentId;
+      }
+      
+      const updatedDeployment = await storage.updateDeployment(id, updateData);
+      if (!updatedDeployment) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to update deployment traffic"
+        });
+      }
+      
+      // If we're setting this deployment to active, and we have a previous deployment,
+      // update the previous deployment to be inactive
+      if (isActive === true && deployment.previousDeploymentId) {
+        await storage.updateDeployment(deployment.previousDeploymentId, { 
+          isActive: false,
+          trafficPercentage: 0
+        });
+      }
+      
+      res.status(200).json({
+        success: true,
+        data: updatedDeployment
+      });
+    } catch (error) {
+      console.error("Error updating deployment traffic:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
     }
   });
 
