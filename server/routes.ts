@@ -727,6 +727,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==== Metrics Routes ====
+  
+  // Get metrics dashboard data
+  app.get("/api/metrics/dashboard", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Get all deployments for calculating metrics
+      const deployments = await storage.getAllDeployments();
+      
+      // Calculate deployment metrics by date (last 7 days)
+      const today = new Date();
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (6 - i));
+        return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      });
+      
+      // Initialize metrics for each day
+      const deploymentsByDate = last7Days.map(date => ({
+        date,
+        count: 0,
+        successful: 0,
+        failed: 0,
+        environment: ''
+      }));
+      
+      // Calculate environment stats
+      const environments = ['Production', 'Staging', 'Testing', 'Development'];
+      const environmentStats = environments.map(name => ({
+        name,
+        deployments: 0,
+        successRate: 0
+      }));
+      
+      // Calculate status distribution
+      const statusColors = {
+        'success': '#00C49F',
+        'failed': '#FF8042',
+        'running': '#0088FE',
+        'pending': '#FFBB28'
+      };
+      const statusDistribution = Object.entries(statusColors).map(([status, color]) => ({
+        status,
+        count: 0,
+        color
+      }));
+      
+      // Calculate build times
+      const buildTimes = last7Days.map(date => ({
+        date,
+        environment: 'All',
+        averageBuildTime: 0
+      }));
+      
+      // Deployment frequency
+      const deploymentFrequency = last7Days.map(date => ({
+        date,
+        count: 0
+      }));
+      
+      // Process deployments to calculate metrics
+      const successfulByEnv: Record<string, number> = {};
+      const totalByEnv: Record<string, number> = {};
+      const buildTimesByDate: Record<string, number[]> = {};
+      
+      deployments.forEach(deployment => {
+        // Skip deployments older than 7 days
+        const deploymentDate = new Date(deployment.startedAt).toISOString().split('T')[0];
+        if (!last7Days.includes(deploymentDate)) return;
+        
+        // Count by date
+        const dateIndex = last7Days.indexOf(deploymentDate);
+        if (dateIndex >= 0) {
+          deploymentsByDate[dateIndex].count++;
+          deploymentFrequency[dateIndex].count++;
+          
+          if (deployment.status === 'success') {
+            deploymentsByDate[dateIndex].successful++;
+          } else if (deployment.status === 'failed') {
+            deploymentsByDate[dateIndex].failed++;
+          }
+        }
+        
+        // Count by environment
+        const envIndex = environments.indexOf(deployment.environment);
+        if (envIndex >= 0) {
+          environmentStats[envIndex].deployments++;
+          
+          // Track success rate by environment
+          if (!totalByEnv[deployment.environment]) {
+            totalByEnv[deployment.environment] = 0;
+            successfulByEnv[deployment.environment] = 0;
+          }
+          
+          totalByEnv[deployment.environment]++;
+          if (deployment.status === 'success') {
+            successfulByEnv[deployment.environment]++;
+          }
+        }
+        
+        // Count by status
+        const statusIndex = statusDistribution.findIndex(s => s.status === deployment.status);
+        if (statusIndex >= 0) {
+          statusDistribution[statusIndex].count++;
+        }
+        
+        // Track build times
+        if (deployment.buildDuration) {
+          if (!buildTimesByDate[deploymentDate]) {
+            buildTimesByDate[deploymentDate] = [];
+          }
+          buildTimesByDate[deploymentDate].push(deployment.buildDuration);
+        }
+      });
+      
+      // Calculate environment success rates
+      environments.forEach((env, index) => {
+        if (totalByEnv[env] && totalByEnv[env] > 0) {
+          const successRate = (successfulByEnv[env] / totalByEnv[env]) * 100;
+          environmentStats[index].successRate = Math.round(successRate);
+        }
+      });
+      
+      // Calculate average build times
+      Object.entries(buildTimesByDate).forEach(([date, times]) => {
+        const dateIndex = last7Days.indexOf(date);
+        if (dateIndex >= 0 && times.length > 0) {
+          const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length;
+          buildTimes[dateIndex].averageBuildTime = avgTime;
+        }
+      });
+      
+      // Return all metrics data
+      res.status(200).json({
+        success: true,
+        data: {
+          deploymentsByDate,
+          buildTimes,
+          statusDistribution,
+          environmentStats,
+          deploymentFrequency
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error generating metrics data:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
 
   // Get metrics by deployment ID
   app.get("/api/deployments/:deploymentId/metrics", isAuthenticated, async (req: Request, res: Response) => {

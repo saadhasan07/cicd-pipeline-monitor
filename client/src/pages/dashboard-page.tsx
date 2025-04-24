@@ -21,6 +21,7 @@ import AnimatedCICDLogo from "@/components/AnimatedCICDLogo";
 import PulsingAnimation from "@/components/PulsingAnimation";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import AnimatedPipeline from "@/components/AnimatedPipeline";
+import MetricsDashboard from "@/components/MetricsDashboard";
 
 export default function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
@@ -255,20 +256,7 @@ export default function DashboardPage() {
         
         <TabsContent value="metrics" className="bg-background rounded-xl border shadow-sm p-6 mt-5 animate-fadeIn">
           <div className="text-2xl font-bold mb-6 gradient-text">Deployment Metrics</div>
-          <div className="h-[300px] flex items-center justify-center p-8 border rounded-xl bg-muted/20 animate-slideInUp">
-            <div className="text-center">
-              <div className="bg-secondary/10 p-5 rounded-full inline-block mb-5">
-                <BarChart className="h-16 w-16 text-secondary animate-pulse-subtle" />
-              </div>
-              <p className="text-muted-foreground text-lg">Detailed metrics visualization will be available here</p>
-              <Button 
-                variant="outline" 
-                className="mt-6 px-6 py-2.5 rounded-lg button-hover-effect shadow-sm"
-              >
-                <span className="mr-2">+</span> Add Metrics
-              </Button>
-            </div>
-          </div>
+          <MetricsDashboard />
         </TabsContent>
       </Tabs>
 
