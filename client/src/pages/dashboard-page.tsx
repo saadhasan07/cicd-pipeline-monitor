@@ -17,6 +17,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
+import AnimatedCICDLogo from "@/components/AnimatedCICDLogo";
+import PulsingAnimation from "@/components/PulsingAnimation";
+import AnimatedBackground from "@/components/AnimatedBackground";
+import AnimatedPipeline from "@/components/AnimatedPipeline";
 
 export default function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
@@ -31,43 +35,57 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="container mx-auto p-6 animate-fadeIn">
-      <header className="flex justify-between items-center mb-10 bg-muted/30 p-6 rounded-xl shadow-sm animate-slideInUp">
-        <div>
-          <h1 className="text-4xl font-bold gradient-text">CI/CD Pipeline Monitor</h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Welcome back, <span className="font-semibold text-primary">{user?.fullName || user?.username}</span>
-          </p>
+    <div className="container mx-auto p-6 animate-fadeIn relative">
+      {/* Animated background */}
+      <AnimatedBackground />
+      
+      <header className="flex flex-col md:flex-row justify-between items-center mb-10 bg-muted/60 backdrop-blur-sm p-6 rounded-xl shadow-md animate-slideInUp border border-white/20">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="w-32 h-32 mr-3 flex-shrink-0">
+            <AnimatedCICDLogo />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold gradient-text text-center md:text-left">CI/CD Pipeline Monitor</h1>
+            <p className="text-muted-foreground mt-2 text-lg text-center md:text-left">
+              Welcome back, <span className="font-semibold text-primary">{user?.fullName || user?.username}</span>
+            </p>
+          </div>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => logout()}
-          disabled={isLoading}
-          className="button-hover-effect px-6 py-6 rounded-lg flex items-center"
-        >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : (
-            <LogOut className="mr-2 h-5 w-5" />
-          )}
-          <span className="font-medium">Logout</span>
-        </Button>
+        <PulsingAnimation delay={1} color="primary" className="mt-4 md:mt-0">
+          <Button 
+            variant="outline" 
+            onClick={() => logout()}
+            disabled={isLoading}
+            className="button-hover-effect px-6 py-6 rounded-lg flex items-center shadow-md"
+          >
+            {isLoading ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <LogOut className="mr-2 h-5 w-5" />
+            )}
+            <span className="font-medium">Logout</span>
+          </Button>
+        </PulsingAnimation>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10 animate-slideInUp" style={{animationDelay: "0.1s"}}>
-        <Card className="card-hover-effect border-t-4 border-t-primary">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Total Projects</CardTitle>
-            <div className="bg-primary/10 p-2 rounded-full">
-              <GitBranch className="h-5 w-5 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">5</div>
-            <p className="text-sm text-muted-foreground mt-1">Active CI/CD pipelines</p>
-          </CardContent>
-        </Card>
-        <Card className="card-hover-effect border-t-4 border-t-primary">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-slideInUp" style={{animationDelay: "0.1s"}}>
+        <PulsingAnimation delay={0.5} color="primary" className="h-full">
+          <Card className="card-hover-effect border-t-4 border-t-primary h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">Total Projects</CardTitle>
+              <div className="bg-primary/10 p-2 rounded-full">
+                <GitBranch className="h-5 w-5 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">5</div>
+              <p className="text-sm text-muted-foreground mt-1">Active CI/CD pipelines</p>
+            </CardContent>
+          </Card>
+        </PulsingAnimation>
+        
+        <Card className="card-hover-effect border-t-4 border-t-primary h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-muted-foreground">Deployments Today</CardTitle>
             <div className="bg-primary/10 p-2 rounded-full">
@@ -79,7 +97,8 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground mt-1">Across all environments</p>
           </CardContent>
         </Card>
-        <Card className="card-hover-effect border-t-4 border-t-secondary">
+        
+        <Card className="card-hover-effect border-t-4 border-t-secondary h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-muted-foreground">Success Rate</CardTitle>
             <div className="bg-secondary/10 p-2 rounded-full">
@@ -91,18 +110,26 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground mt-1">Last 30 days</p>
           </CardContent>
         </Card>
-        <Card className="card-hover-effect border-t-4 border-t-secondary animate-pulse-subtle">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Pending Approvals</CardTitle>
-            <div className="bg-secondary/10 p-2 rounded-full">
-              <GitPullRequest className="h-5 w-5 text-secondary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">3</div>
-            <p className="text-sm text-muted-foreground mt-1">Production deployments</p>
-          </CardContent>
-        </Card>
+        
+        <PulsingAnimation delay={1.5} color="secondary" className="h-full">
+          <Card className="card-hover-effect border-t-4 border-t-secondary h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">Pending Approvals</CardTitle>
+              <div className="bg-secondary/10 p-2 rounded-full">
+                <GitPullRequest className="h-5 w-5 text-secondary" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">3</div>
+              <p className="text-sm text-muted-foreground mt-1">Production deployments</p>
+            </CardContent>
+          </Card>
+        </PulsingAnimation>
+      </div>
+      
+      {/* Animated Pipeline Visualization */}
+      <div className="mb-10 animate-slideInUp" style={{animationDelay: "0.15s"}}>
+        <AnimatedPipeline />
       </div>
 
       <Tabs defaultValue="deployments" className="mb-10 animate-slideInUp" style={{animationDelay: "0.2s"}}>
