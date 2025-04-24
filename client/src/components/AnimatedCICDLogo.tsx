@@ -18,21 +18,10 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
     // Animation variables
     let angle = 0;
     
-    // Color definitions - matching the image with sky blue primary color
+    // Colors as requested
     const skyBlue = '#1E88E5';
-    const ciColors = {
-      plan: '#1976D2',     // Blue
-      code: '#8BC34A',     // Green
-      build: '#7CB342',    // Darker green
-      test: '#FFA726'      // Orange
-    };
-    
-    const cdColors = {
-      release: '#FFA726',  // Orange
-      deploy: '#AB47BC',   // Purple
-      operate: '#9C27B0',  // Darker purple
-      monitor: '#1E88E5'   // Sky blue
-    };
+    const skyBlueLight = '#64B5F6';
+    const orangeColor = '#FF7043';
     
     // Animation frame function
     const draw = () => {
@@ -42,182 +31,222 @@ export default function AnimatedCICDLogo({ className = "" }: { className?: strin
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const radius = Math.min(canvas.width, canvas.height) * 0.25;
-      const gapBetweenCircles = radius * 1.2; // Gap between the two circles
       
-      // Draw CI circle (left)
-      const ciCenterX = centerX - gapBetweenCircles/2;
-      const ciCenterY = centerY;
+      // Draw infinity symbol (figure 8) with sky blue color
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       
-      // Draw CD circle (right)
-      const cdCenterX = centerX + gapBetweenCircles/2;
-      const cdCenterY = centerY;
-      
-      // Segment angles (in radians)
-      const segmentAngle = Math.PI / 2; // 90 degrees per segment
-      
-      // Draw CI segments (clockwise)
-      const ciSegments = [
-        { name: 'PLAN', color: ciColors.plan, startAngle: 0, endAngle: segmentAngle },
-        { name: 'CODE', color: ciColors.code, startAngle: segmentAngle, endAngle: segmentAngle * 2 },
-        { name: 'BUILD', color: ciColors.build, startAngle: segmentAngle * 2, endAngle: segmentAngle * 3 },
-        { name: 'TEST', color: ciColors.test, startAngle: segmentAngle * 3, endAngle: segmentAngle * 4 }
-      ];
-
-      // Draw CD segments (clockwise)
-      const cdSegments = [
-        { name: 'RELEASE', color: cdColors.release, startAngle: 0, endAngle: segmentAngle },
-        { name: 'DEPLOY', color: cdColors.deploy, startAngle: segmentAngle, endAngle: segmentAngle * 2 },
-        { name: 'OPERATE', color: cdColors.operate, startAngle: segmentAngle * 2, endAngle: segmentAngle * 3 },
-        { name: 'MONITOR', color: cdColors.monitor, startAngle: segmentAngle * 3, endAngle: segmentAngle * 4 }
-      ];
-      
-      // Offset angle for animation
-      const animationOffset = angle;
-      
-      // Draw CI circle segments
-      ciSegments.forEach((segment, index) => {
-        ctx.beginPath();
-        const startAngle = segment.startAngle + animationOffset;
-        const endAngle = segment.endAngle + animationOffset;
-        
-        // Draw segment
-        ctx.arc(ciCenterX, ciCenterY, radius, startAngle, endAngle);
-        ctx.arc(ciCenterX, ciCenterY, radius * 0.6, endAngle, startAngle, true);
-        ctx.closePath();
-        
-        // Fill segment
-        ctx.fillStyle = segment.color;
-        ctx.fill();
-        
-        // Add white border
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        // Add text
-        const textAngle = (startAngle + endAngle) / 2;
-        const textRadius = radius * 0.8;
-        const textX = ciCenterX + Math.cos(textAngle) * textRadius;
-        const textY = ciCenterY + Math.sin(textAngle) * textRadius;
-        
-        ctx.save();
-        ctx.translate(textX, textY);
-        ctx.rotate(textAngle + Math.PI/2);
-        
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(segment.name, 0, 0);
-        
-        ctx.restore();
-      });
-      
-      // Draw CD circle segments
-      cdSegments.forEach((segment, index) => {
-        ctx.beginPath();
-        const startAngle = segment.startAngle + animationOffset;
-        const endAngle = segment.endAngle + animationOffset;
-        
-        // Draw segment
-        ctx.arc(cdCenterX, cdCenterY, radius, startAngle, endAngle);
-        ctx.arc(cdCenterX, cdCenterY, radius * 0.6, endAngle, startAngle, true);
-        ctx.closePath();
-        
-        // Fill segment
-        ctx.fillStyle = segment.color;
-        ctx.fill();
-        
-        // Add white border
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        // Add text
-        const textAngle = (startAngle + endAngle) / 2;
-        const textRadius = radius * 0.8;
-        const textX = cdCenterX + Math.cos(textAngle) * textRadius;
-        const textY = cdCenterY + Math.sin(textAngle) * textRadius;
-        
-        ctx.save();
-        ctx.translate(textX, textY);
-        ctx.rotate(textAngle + Math.PI/2);
-        
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(segment.name, 0, 0);
-        
-        ctx.restore();
-      });
-      
-      // Draw center circles (white background for CI/CD text)
+      // Left loop (CI)
       ctx.beginPath();
-      ctx.arc(ciCenterX, ciCenterY, radius * 0.6, 0, Math.PI * 2);
-      ctx.fillStyle = 'white';
-      ctx.fill();
+      ctx.strokeStyle = skyBlue;
+      ctx.shadowColor = skyBlueLight;
+      ctx.shadowBlur = 10;
       
+      for (let i = 0; i <= Math.PI * 2; i += 0.1) {
+        const x = centerX - radius * 1.2 + Math.cos(i - Math.PI / 2 + angle) * radius;
+        const y = centerY + Math.sin(i - Math.PI / 2 + angle) * radius;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+      
+      // Right loop (CD)
       ctx.beginPath();
-      ctx.arc(cdCenterX, cdCenterY, radius * 0.6, 0, Math.PI * 2);
-      ctx.fillStyle = 'white';
-      ctx.fill();
+      ctx.strokeStyle = skyBlueLight;
+      ctx.shadowColor = skyBlue;
+      ctx.shadowBlur = 10;
       
-      // Draw "CI" and "CD" labels
-      ctx.font = "bold 24px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      for (let i = 0; i <= Math.PI * 2; i += 0.1) {
+        const x = centerX + radius * 1.2 + Math.cos(i + Math.PI / 2 + angle) * radius;
+        const y = centerY + Math.sin(i + Math.PI / 2 + angle) * radius;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
       
-      // CI label
-      ctx.fillStyle = skyBlue;
-      ctx.fillText("CI", ciCenterX, ciCenterY);
+      // Connection between loops (infinity shape)
+      ctx.beginPath();
+      ctx.strokeStyle = skyBlue;
       
-      // CD label
-      ctx.fillStyle = skyBlue;
-      ctx.fillText("CD", cdCenterX, cdCenterY);
-      
-      // Draw connecting arrow from CI to CD
-      const arrowLength = gapBetweenCircles;
-      const arrowWidth = radius * 0.3;
-      const arrowY = centerY;
-      
-      // Draw arrow body
-      const gradient = ctx.createLinearGradient(
-        ciCenterX + radius * 0.5, arrowY, 
-        cdCenterX - radius * 0.5, arrowY
+      // Top connection
+      ctx.moveTo(
+        centerX - radius * 1.2 + Math.cos(-Math.PI / 2 + angle) * radius, 
+        centerY + Math.sin(-Math.PI / 2 + angle) * radius
       );
-      gradient.addColorStop(0, '#FFA726'); // Orange from test
-      gradient.addColorStop(1, '#FFA726'); // Orange from release
+      ctx.bezierCurveTo(
+        centerX - radius * 0.6, centerY - radius * 0.8,
+        centerX + radius * 0.6, centerY - radius * 0.8,
+        centerX + radius * 1.2 + Math.cos(Math.PI / 2 + angle) * radius,
+        centerY + Math.sin(Math.PI / 2 + angle) * radius
+      );
       
-      ctx.beginPath();
-      ctx.moveTo(ciCenterX + radius * 0.5, arrowY - arrowWidth/2);
-      ctx.lineTo(cdCenterX - radius * 0.5, arrowY - arrowWidth/2);
-      ctx.lineTo(cdCenterX - radius * 0.5, arrowY + arrowWidth/2);
-      ctx.lineTo(ciCenterX + radius * 0.5, arrowY + arrowWidth/2);
-      ctx.closePath();
-      ctx.fillStyle = gradient;
-      ctx.fill();
+      // Bottom connection
+      ctx.moveTo(
+        centerX - radius * 1.2 + Math.cos(Math.PI * 1.5 + angle) * radius, 
+        centerY + Math.sin(Math.PI * 1.5 + angle) * radius
+      );
+      ctx.bezierCurveTo(
+        centerX - radius * 0.6, centerY + radius * 0.8,
+        centerX + radius * 0.6, centerY + radius * 0.8,
+        centerX + radius * 1.2 + Math.cos(Math.PI * 2.5 + angle) * radius,
+        centerY + Math.sin(Math.PI * 2.5 + angle) * radius
+      );
       
-      // Draw animated dots along the pipeline
-      const dotCount = 3;
-      for (let i = 0; i < dotCount; i++) {
-        const offsetX = Math.sin(angle * 3 + i * Math.PI/2) * 5;
-        const normalizedPos = ((angle * 0.5 + i * 0.5) % 1);
-        const dotX = ciCenterX + radius * 0.5 + normalizedPos * arrowLength;
+      ctx.stroke();
+      
+      // Draw atoms (electrons) orbiting in orange
+      const atomCount = 8; 
+      const atomOffset = Math.PI * 2 / atomCount;
+      
+      for (let i = 0; i < atomCount; i++) {
+        // Calculate position on the infinity path
+        const pathPos = i * atomOffset + angle * 3;
         
+        let x, y;
+        
+        // Determine if atom is on left or right loop
+        if (pathPos % (Math.PI * 4) < Math.PI * 2) {
+          // Left loop (CI)
+          const loopAngle = pathPos % (Math.PI * 2) - Math.PI / 2;
+          x = centerX - radius * 1.2 + Math.cos(loopAngle + angle) * radius;
+          y = centerY + Math.sin(loopAngle + angle) * radius;
+        } else {
+          // Right loop (CD)
+          const loopAngle = (pathPos % (Math.PI * 2)) + Math.PI / 2;
+          x = centerX + radius * 1.2 + Math.cos(loopAngle + angle) * radius;
+          y = centerY + Math.sin(loopAngle + angle) * radius;
+        }
+        
+        // Draw atom center
         ctx.beginPath();
-        ctx.arc(dotX, arrowY + offsetX/3, 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = orangeColor;
+        ctx.shadowColor = orangeColor;
+        ctx.shadowBlur = 15;
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw pulsing effect
-        const pulseSize = (Math.sin(angle * 3 + i) + 1) * 3 + 2;
+        // Draw orbiting electrons
+        for (let j = 0; j < 2; j++) {
+          const electronAngle = angle * 8 + i * Math.PI + j * Math.PI;
+          const electronDistance = 12;
+          const electronX = x + Math.cos(electronAngle) * electronDistance;
+          const electronY = y + Math.sin(electronAngle) * electronDistance;
+          
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(255, 112, 67, 0.7)'; // Semi-transparent orange
+          ctx.arc(electronX, electronY, 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw electron orbit
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(255, 112, 67, 0.3)'; // Very transparent orange
+          ctx.lineWidth = 1;
+          ctx.arc(x, y, electronDistance, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        
+        // Draw pulsing glow
+        const pulseSize = (Math.sin(angle * 5 + i) + 1.5) * 5;
         ctx.beginPath();
-        ctx.arc(dotX, arrowY + offsetX/3, pulseSize, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillStyle = 'rgba(255, 112, 67, 0.2)'; // Very transparent orange
+        ctx.arc(x, y, pulseSize, 0, Math.PI * 2);
         ctx.fill();
       }
       
+      // Draw "CI" and "CD" labels in floating boxes
+      const labelPadding = 10;
+      const labelWidth = 40;
+      const labelHeight = 28;
+      
+      // CI Label (left)
+      const ciX = centerX - radius * 1.2;
+      const ciY = centerY;
+      
+      // Label background
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = skyBlue;
+      ctx.lineWidth = 2;
+      
+      // Draw rounded rectangle manually for browser compatibility
+      ctx.beginPath();
+      const ciRectX = ciX - labelWidth/2;
+      const ciRectY = ciY - labelHeight/2;
+      const cornerRadius = 5;
+      
+      // Top left corner
+      ctx.moveTo(ciRectX + cornerRadius, ciRectY);
+      // Top right corner
+      ctx.lineTo(ciRectX + labelWidth - cornerRadius, ciRectY);
+      ctx.arcTo(ciRectX + labelWidth, ciRectY, ciRectX + labelWidth, ciRectY + cornerRadius, cornerRadius);
+      // Bottom right corner
+      ctx.lineTo(ciRectX + labelWidth, ciRectY + labelHeight - cornerRadius);
+      ctx.arcTo(ciRectX + labelWidth, ciRectY + labelHeight, ciRectX + labelWidth - cornerRadius, ciRectY + labelHeight, cornerRadius);
+      // Bottom left corner
+      ctx.lineTo(ciRectX + cornerRadius, ciRectY + labelHeight);
+      ctx.arcTo(ciRectX, ciRectY + labelHeight, ciRectX, ciRectY + labelHeight - cornerRadius, cornerRadius);
+      // Top left corner again
+      ctx.lineTo(ciRectX, ciRectY + cornerRadius);
+      ctx.arcTo(ciRectX, ciRectY, ciRectX + cornerRadius, ciRectY, cornerRadius);
+      
+      ctx.fill();
+      ctx.stroke();
+      
+      // Label text
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = skyBlue;
+      ctx.fillText("CI", ciX, ciY);
+      
+      // CD Label (right)
+      const cdX = centerX + (centerY * 0.25) * 1.2;  // Using the same radius calculation as before
+      const cdY = centerY;
+      
+      // Label background
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = skyBlueLight;
+      ctx.lineWidth = 2;
+      
+      // Draw rounded rectangle manually for browser compatibility
+      ctx.beginPath();
+      const cdRectX = cdX - labelWidth/2;
+      const cdRectY = cdY - labelHeight/2;
+      const cdRectRadius = 5;
+      
+      // Top left corner
+      ctx.moveTo(cdRectX + cdRectRadius, cdRectY);
+      // Top right corner
+      ctx.lineTo(cdRectX + labelWidth - cdRectRadius, cdRectY);
+      ctx.arcTo(cdRectX + labelWidth, cdRectY, cdRectX + labelWidth, cdRectY + cdRectRadius, cdRectRadius);
+      // Bottom right corner
+      ctx.lineTo(cdRectX + labelWidth, cdRectY + labelHeight - cdRectRadius);
+      ctx.arcTo(cdRectX + labelWidth, cdRectY + labelHeight, cdRectX + labelWidth - cdRectRadius, cdRectY + labelHeight, cdRectRadius);
+      // Bottom left corner
+      ctx.lineTo(cdRectX + cdRectRadius, cdRectY + labelHeight);
+      ctx.arcTo(cdRectX, cdRectY + labelHeight, cdRectX, cdRectY + labelHeight - cdRectRadius, cdRectRadius);
+      // Top left corner again
+      ctx.lineTo(cdRectX, cdRectY + cdRectRadius);
+      ctx.arcTo(cdRectX, cdRectY, cdRectX + cdRectRadius, cdRectY, cdRectRadius);
+      
+      ctx.fill();
+      ctx.stroke();
+      
+      // Label text
+      ctx.font = "bold 16px Arial";
+      ctx.fillStyle = skyBlueLight;
+      ctx.fillText("CD", cdX, cdY);
+      
       // Update animation variables
-      angle += 0.005;
+      angle += 0.01;
       
       // Continue animation
       requestAnimationFrame(draw);
