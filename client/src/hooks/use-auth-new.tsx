@@ -50,9 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         });
         
-        const data = await response.json();
-        if (data.success && data.user) {
-          setUser(data.user);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+          } else {
+            setUser(null);
+          }
         } else {
           setUser(null);
         }
@@ -81,6 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Login failed with status ${response.status}`);
+      }
+      
       if (data.success && data.user) {
         setUser(data.user);
         toast({
@@ -117,6 +126,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Registration failed with status ${response.status}`);
+      }
+      
       if (data.success && data.user) {
         setUser(data.user);
         toast({
@@ -152,6 +166,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Logout failed with status ${response.status}`);
+      }
+      
       if (data.success) {
         setUser(null);
         toast({

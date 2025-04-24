@@ -41,10 +41,10 @@ export default function DashboardPage() {
         </div>
         <Button 
           variant="outline" 
-          onClick={() => logoutMutation.mutate()}
-          disabled={logoutMutation.isPending}
+          onClick={() => logout()}
+          disabled={isLoading}
         >
-          {logoutMutation.isPending ? (
+          {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <LogOut className="mr-2 h-4 w-4" />
