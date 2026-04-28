@@ -25,6 +25,11 @@ type AuthContextType = {
   >;
 };
 
+type UserResponse = {
+  success: boolean;
+  user: User | null;
+};
+
 export type LoginData = {
   username: string;
   password: string;
@@ -40,9 +45,18 @@ export type RegisterData = {
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
+function isUserResponse(value: unknown): value is UserResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "success" in value &&
+    "user" in value
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  
+
   const {
     data: userData,
     error,
@@ -52,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
-  const user = userData && typeof userData === 'object' && 'success' in userData && userData.success ? userData.user : null;
+  const user = isUserResponse(userData) && userData.success ? userData.user : null;
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
