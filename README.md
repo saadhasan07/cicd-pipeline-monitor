@@ -1,97 +1,84 @@
 # CI/CD Pipeline Monitor
 
-A modern web application for monitoring and managing CI/CD pipelines, deployments, and DevOps activities.
+[![Continuous Integration](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/ci.yml)
+[![Preview](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/preview.yml/badge.svg)](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/preview.yml)
 
-![CI/CD Pipeline Monitor](generated-icon.png)
+A full-stack dashboard concept for tracking software delivery health, deployments, approval gates, and release visibility across environments.
 
-## Features
+## Live Preview
 
-- **Real-time Pipeline Monitoring**: Track the status of CI/CD pipelines with animated visualizations
-- **Blue/Green Deployment Strategy**: Control and monitor blue/green deployments with traffic shifting
-- **Comprehensive Metrics Dashboard**: Visualize deployment statistics, build times, and success rates
-- **Environment Management**: Monitor deployments across multiple environments (Development, Testing, Staging, Production)
-- **Notification System**: Real-time notifications for deployment events, approvals, and failures
-- **User Authentication**: Secure login system with role-based access control
-- **Interactive UI**: Modern, responsive design with animations and a professional look and feel
+- Product preview: [https://saadhasan07.github.io/cicd-pipeline-monitor/](https://saadhasan07.github.io/cicd-pipeline-monitor/)
+- Repository: [https://github.com/saadhasan07/cicd-pipeline-monitor](https://github.com/saadhasan07/cicd-pipeline-monitor)
+- Actions: [https://github.com/saadhasan07/cicd-pipeline-monitor/actions](https://github.com/saadhasan07/cicd-pipeline-monitor/actions)
+
+## What This Project Shows
+
+- Pipeline health and deployment visibility in one place
+- A frontend built with React, TypeScript, Tailwind, and shadcn/ui
+- An Express backend prepared for authentication, sessions, and API routes
+- A professional GitHub Actions setup for validation and preview publishing
+- A static GitHub Pages experience so visitors can understand the product without local setup
 
 ## Tech Stack
 
-- **Frontend**: React, TypeScript, TailwindCSS, Shadcn UI, Recharts, Framer Motion
-- **Backend**: Node.js, Express.js, PostgreSQL, Drizzle ORM
-- **Authentication**: Passport.js with session-based authentication
-- **State Management**: React Query for server state, React hooks for local state
-- **Styling**: TailwindCSS with custom animations and UI components
+- Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion, Recharts
+- Backend: Node.js, Express, PostgreSQL, Drizzle ORM
+- Authentication: Passport with session-based flows
+- Tooling: GitHub Actions, npm, TypeScript, esbuild
 
-## Getting Started
+## CI/CD Setup
+
+The repository now includes two GitHub Actions workflows:
+
+1. `Continuous Integration`
+   Runs dependency installation, TypeScript validation, and a production build on every push to `main`, every pull request to `main`, and manual dispatches.
+2. `Preview`
+   Publishes a polished static product preview to GitHub Pages so recruiters, teammates, and other visitors can explore the project quickly.
+
+This keeps the public preview reliable while the full application remains free to use real authentication, APIs, and database-backed behavior.
+
+## Local Development
 
 ### Prerequisites
 
-- Node.js (v16+)
-- PostgreSQL database
+- Node.js 20+
+- PostgreSQL
 
-### Installation
+### Setup
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/saadhasan07/cicd-pipeline-monitor.git
-   cd cicd-pipeline-monitor
-   ```
+1. Clone the repository.
+2. Install dependencies with `npm install`.
+3. Create a `.env` file in the project root.
+4. Add at least these values:
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/cicd_monitor
+SESSION_SECRET=your_session_secret
+```
 
-3. Create a `.env` file in the root directory with the following:
-   ```
-   DATABASE_URL=postgresql://username:password@localhost:5432/cicd_monitor
-   SESSION_SECRET=your_session_secret
-   ```
+5. Push the schema with `npm run db:push`.
+6. Start the app with `npm run dev`.
 
-4. Set up the database:
-   ```bash
-   npm run db:push
-   ```
+### Useful Scripts
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+- `npm run dev` starts the local full-stack app
+- `npm run check` runs the TypeScript check
+- `npm run build` creates the production build
+- `npm run ci` runs the same validation flow used in CI
+- `npm run preview` serves the Vite production build locally
 
-## Features in Detail
+## Project Structure
 
-### Blue/Green Deployment Visualization
+- `client/` React frontend
+- `server/` Express server and API routes
+- `shared/` shared schema and types
+- `preview/` static GitHub Pages preview
+- `.github/workflows/` CI and deployment automation
 
-The application includes a visual representation of blue/green deployments with traffic shifting capabilities. Users can:
-- Monitor the status of both blue and green environments
-- Control traffic distribution between environments
-- View health metrics for each deployment slot
+## Preview Notes
 
-### Metrics Dashboard
-
-The metrics dashboard provides comprehensive insights including:
-- Deployment frequency over time
-- Success/failure rates by environment
-- Average build times
-- Deployment status distribution
-- Environment comparison stats
-
-### Notification System
-
-The notification center keeps users informed about important events:
-- Deployment completions and failures
-- Approval requests
-- Pipeline changes
-- Build status updates
-
-## Screenshots
-
-*Insert screenshots here*
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+The GitHub Pages site is a static walkthrough of the product. It is intentionally separate from the authenticated full-stack app so visitors can always see a stable preview without needing the backend, database, or login flow.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
