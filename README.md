@@ -3,37 +3,40 @@
 [![Continuous Integration](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/ci.yml)
 [![Preview](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/preview.yml/badge.svg)](https://github.com/saadhasan07/cicd-pipeline-monitor/actions/workflows/preview.yml)
 
-A full-stack dashboard concept for tracking software delivery health, deployments, approval gates, and release visibility across environments.
+A full-stack CI/CD dashboard concept for tracking delivery health, approvals, deployments, and release visibility across environments.
 
-## Live Preview
+## Quick Links
 
-- Product preview: [https://saadhasan07.github.io/cicd-pipeline-monitor/](https://saadhasan07.github.io/cicd-pipeline-monitor/)
-- Repository: [https://github.com/saadhasan07/cicd-pipeline-monitor](https://github.com/saadhasan07/cicd-pipeline-monitor)
-- Actions: [https://github.com/saadhasan07/cicd-pipeline-monitor/actions](https://github.com/saadhasan07/cicd-pipeline-monitor/actions)
+- Live preview: [https://saadhasan07.github.io/cicd-pipeline-monitor/](https://saadhasan07.github.io/cicd-pipeline-monitor/)
+- Source code: [https://github.com/saadhasan07/cicd-pipeline-monitor](https://github.com/saadhasan07/cicd-pipeline-monitor)
+- GitHub Actions: [https://github.com/saadhasan07/cicd-pipeline-monitor/actions](https://github.com/saadhasan07/cicd-pipeline-monitor/actions)
 
-## What This Project Shows
+## Project Snapshot
 
-- Pipeline health and deployment visibility in one place
-- A frontend built with React, TypeScript, Tailwind, and shadcn/ui
-- An Express backend prepared for authentication, sessions, and API routes
-- A professional GitHub Actions setup for validation and preview publishing
-- A static GitHub Pages experience so visitors can understand the product without local setup
+- Product goal: make delivery activity easier to understand for engineers, reviewers, and release owners
+- Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Recharts, Framer Motion
+- Backend: Node.js, Express, PostgreSQL, Drizzle ORM, Passport sessions
+- Delivery story: working CI validation plus an always-available public preview
 
-## Tech Stack
+## Why This Repo Is Useful
 
-- Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion, Recharts
-- Backend: Node.js, Express, PostgreSQL, Drizzle ORM
-- Authentication: Passport with session-based flows
-- Tooling: GitHub Actions, npm, TypeScript, esbuild
+- Shows how a developer tool can be presented professionally on GitHub
+- Separates the public preview from the authenticated full-stack application cleanly
+- Demonstrates a practical GitHub Actions setup for validation and deployment
+- Gives recruiters and teammates a quick way to understand the idea without local setup
+
+## Preview Experience
+
+The GitHub Pages site is a static walkthrough of the product. It is intentionally separate from the authenticated full-stack app so visitors can always open a stable demo without needing the backend, database, or login flow.
 
 ## CI/CD Setup
 
-The repository now includes two GitHub Actions workflows:
+The repository includes two GitHub Actions workflows:
 
 1. `Continuous Integration`
-   Runs dependency installation, TypeScript validation, and a production build on every push to `main`, every pull request to `main`, and manual dispatches.
+Runs dependency installation, TypeScript validation, and a production build on every push to `main`, every pull request to `main`, and manual dispatches.
 2. `Preview`
-   Publishes a polished static product preview to GitHub Pages so recruiters, teammates, and other visitors can explore the project quickly.
+Publishes a polished static product preview to GitHub Pages so visitors can explore the project immediately.
 
 This keeps the public preview reliable while the full application remains free to use real authentication, APIs, and database-backed behavior.
 
@@ -74,10 +77,6 @@ SESSION_SECRET=your_session_secret
 - `shared/` shared schema and types
 - `preview/` static GitHub Pages preview
 - `.github/workflows/` CI and deployment automation
-
-## Preview Notes
-
-The GitHub Pages site is a static walkthrough of the product. It is intentionally separate from the authenticated full-stack app so visitors can always see a stable preview without needing the backend, database, or login flow.
 
 ## License
 
